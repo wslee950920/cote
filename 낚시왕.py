@@ -1,66 +1,81 @@
 R, C, M=map(int, input().split(' '))
 
-data=[]
+board=[[[] for _ in range(C)] for _ in range(R)]
 for _ in range(M):
-    data.append(list(map(int, input().split(' '))))
-#print(data)
+    r, c, s, d, z=map(int, input().split(' '))
 
-dc=[0, 0, 0, 1, -1]
-dr=[0, -1, 1, 0, 0]
-
-board=[[0]*(C+1) for _ in range(R+1)]
-for r, c, _, _, z in data:
-    board[r][c]=z
+    board[r-1][c-1].append([z, s, d-1])
 #print(board)
 
+dx=[-1, 1, 0, 0]
+dy=[0, 0, 1, -1]
+
 answer=0
-for x in range(1, C+1):
-    y=0
-    while y<R+1:
-        if board[y][x]!=0:
-            answer+=board[y][x]
-            board[y][x]=0
+
+for land in range(C):
+    print(land)
+
+    depth=0
+    while depth<R:
+        if board[depth][land]:
+            z, _, _=board[depth][land].pop()
+            answer+=z
 
             break
 
-        y+=1
+        depth+=1
 
-    tmp=[]
-    for r, c, s, d, _ in data:
-        #print(r, c, s, d, board[r][c])
+    tmp=[[[] for _ in range(C)] for _ in range(R)]
 
-        nr=r
-        nc=c
-        nd=d
+    for x in range(R):
+        for y in range(C):
+            if not board[x][y]:
+                continue
+                
+            z, s, d=board[x][y].pop()
+            print('before', x, y, d, z)
 
-        if board[r][c]==0:
-            continue
+            nx=x+dx[d]*s
+            ny=y+dy[d]*s
 
-        z=board[r][c]
+            if nx<0 or nx>=R or ny<0 or ny>=C:
+                if d==0 or d==1:
+                    c=R*2-2
 
-        for _ in range(s):
-            if nd==1 or nd==2:
-                if nr==1:
-                    nd=2
+                    nx=abs(nx)%c
+                    if nx>=R:
+                        nx=c-nx
 
-                elif nr==R:
-                    nd=1
-            
-            elif nd==3 or nd==4:
-                if nc==1:
-                    nd=3
+                        if d==1:
+                            d=0
 
-                elif nc==C:
-                    nd=4
+                    else:
+                        if d==0:
+                            d=1
 
-            nr+=dr[nd]
-            nc+=dc[nd]
+                elif d==2 or d==3:
+                    c=C*2-2
 
-        board[r][c]=0
-        board[nr][nc]=max(board[nr][nc], z)
-        #print(answer, board)
+                    ny=abs(ny)%c
+                    if ny>=C:
+                        ny=c-ny
 
-        tmp.append([nr, nc, s, nd, None])
-    data=tmp
+                        if d==2:
+                            d=3
 
+                    else:
+                        if d==3:
+                            d=2                   
+
+            print('after', nx, ny, d, z)
+            tmp[nx][ny].append([z, s, d])
+    print('tmp', tmp)
+
+    for i in range(R):
+        for j in range(C):
+            if tmp[i][j]:
+                tmp[i][j].sort(reverse=True)
+
+                board[i][j].append(tmp[i][j][0])
+    print('rst', board)
 print(answer)
